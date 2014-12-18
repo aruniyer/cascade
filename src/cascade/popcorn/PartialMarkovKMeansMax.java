@@ -1,5 +1,6 @@
 package cascade.popcorn;
 
+import java.io.BufferedWriter;
 import java.util.Arrays;
 
 import weka.clusterers.AbstractClusterer;
@@ -104,7 +105,7 @@ public class PartialMarkovKMeansMax extends FullMarkovKMeansMax {
 		return centroids[maxIndex];
 	}
 	
-	protected Result getMSE(Instances instancesAt0, Instances instancesAtEnd, int timeStep) throws Exception {
+	protected Result getMSE(Instances instancesAt0, Instances instancesAtEnd, int timeStep, BufferedWriter writer) throws Exception {
 		System.out.print("Computing MSE ... ");
 		long start = System.currentTimeMillis();
 		Result result = new Result();
@@ -118,7 +119,7 @@ public class PartialMarkovKMeansMax extends FullMarkovKMeansMax {
 			Instance instanceAtEnd = instancesAtEnd.get(i);
 			Instance prediction = doPrediction(instanceAt0, timeStep);
 			if (prediction != null) {
-				relativeError(result.re, instanceAtEnd, prediction);
+				relativeError(result.re, instanceAtEnd, prediction, writer);
 				computeDiffSquare(result.rmse, instanceAtEnd, prediction);				
 				int actualCluster = simpleKMeans[simpleKMeans.length - 1].clusterInstance(filterAttributes(instanceAtEnd));
 				int predictedCluster = simpleKMeans[simpleKMeans.length - 1].clusterInstance(filterAttributes(prediction));

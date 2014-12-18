@@ -1,5 +1,6 @@
 package cascade.popcorn;
 
+import java.io.BufferedWriter;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -87,7 +88,7 @@ public class DiffMarkovKMeansMax implements IMarkovModel {
 		return prediction;
 	}
 	
-	public Result getTrainingMSE() throws Exception {
+	public Result getTrainingMSE(BufferedWriter writer) throws Exception {
 		System.out.print("Reading first location ... ");
 		DataSource dataSourceAt0 = new DataSource(locations[0]);
 		Instances instancesAt0 = dataSourceAt0.getDataSet();
@@ -96,10 +97,10 @@ public class DiffMarkovKMeansMax implements IMarkovModel {
 		DataSource dataSourceAtEnd = new DataSource(locations[locations.length - 1]);
 		Instances instancesAtEnd = dataSourceAtEnd.getDataSet();
 		System.out.println("[DONE]");
-		return getMSE(instancesAt0, instancesAtEnd, 0);		
+		return getMSE(instancesAt0, instancesAtEnd, 0, writer);		
 	}
 	
-	protected Result getMSE(Instances instancesAt0, Instances absInstancesAtEnd, int timeStep) throws Exception {
+	protected Result getMSE(Instances instancesAt0, Instances absInstancesAtEnd, int timeStep, BufferedWriter writer) throws Exception {
 		System.out.print("Computing MSE ... ");
 		long start = System.currentTimeMillis();
 		Result result = new Result();
@@ -176,12 +177,12 @@ public class DiffMarkovKMeansMax implements IMarkovModel {
 		return result;
 	}
 	
-	public Result getTestMSE(String locationAt0, String locationAtEnd, int timeStep) throws Exception {
+	public Result getTestMSE(String locationAt0, String locationAtEnd, int timeStep, BufferedWriter writer) throws Exception {
 		DataSource dataSourceAt0 = new DataSource(locationAt0);
 		Instances instancesAt0 = dataSourceAt0.getDataSet();
 		DataSource dataSourceAtEnd = new DataSource(locationAtEnd);
 		Instances instancesAtEnd = dataSourceAtEnd.getDataSet();
-		return getMSE(instancesAt0, instancesAtEnd, timeStep);
+		return getMSE(instancesAt0, instancesAtEnd, timeStep, writer);
 	}
 	
 	public Result getTestMSE(String locationAt0, String absLocationAt0, String absLocationAtEnd, int timeStep) throws Exception {

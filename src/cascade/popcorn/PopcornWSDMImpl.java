@@ -41,103 +41,29 @@ public class PopcornWSDMImpl {
 		return markovModel;
 	}
 	
-	public static void getTrainingAccuracy(String modelFile) throws Exception {
-		IMarkovModel markovModel = readModel(modelFile);
-		System.out.println(markovModel.getTrainingMSE());
-	}
-	
-	public static void getTestingAccuracy(String locationAt1, String locationAtEnd, int timeStep, String modelFile) throws Exception {
-		IMarkovModel markovModel = readModel(modelFile);
-		System.out.println(markovModel.getTestMSE(locationAt1, locationAtEnd, timeStep));
-	}
-	
-	public static void main1(int numClusters, Class<? extends IMarkovModel> clazz, int[] clusteringAttributes) throws Exception {
+	public static void main(String[] args) throws Exception {
 		int seed = 10;
-		String modelFile = "20141104_n" + numClusters + "_" + clazz.getSimpleName();
-		if (clusteringAttributes != null)
-			modelFile += Arrays.toString(clusteringAttributes);
+		int numClusters = 8;
+		Class<PartialMarkovKMeansMax> clazz = PartialMarkovKMeansMax.class;
+		String modelFile = "20141217_n" + numClusters + "_" + clazz.getSimpleName();
 		modelFile += ".model";
 		System.out.println("Building the model ... ");
-		String[] trainLocations = GlobalParameters.SizeFileParameters.trainLocations;
-//		String[] testLocations = GlobalParameters.FileParameters.testLocations;
-		buildModel(modelFile, clazz.getName(), trainLocations, numClusters, clusteringAttributes, seed);
-		System.out.println("Reading the model ... ");
+		String[] trainLocations = GlobalParameters.WeinerFileParameters.trainLocations;
+		String[] testLocations = GlobalParameters.WeinerFileParameters.testLocations;
+		String[] testLocationsAbs = GlobalParameters.WeinerFileParameters.testLocations;
+		
+		buildModel(modelFile, clazz.getName(), trainLocations, numClusters, new int[]{0}, seed);
 		IMarkovModel markovModel = readModel(modelFile);
-		String outputFile = "popcorn_results_n" + numClusters + "_" + clazz.getSimpleName();
-		if (clusteringAttributes != null)
-			outputFile = outputFile + Arrays.toString(clusteringAttributes);
-		outputFile += ".txt";
-		System.out.println(outputFile);
-//		BufferedWriter outputWriter = new BufferedWriter(new FileWriter(outputFile));
-//		for (int i = 0; i < testLocations.length - 1; i++) {
-//			System.out.println("At t = " + i);
-//			Result result = markovModel.getTestMSE(testLocations[i], testLocations[testLocations.length - 1], i);
-//			outputWriter.write("At t = " + Math.pow(2, i+1));
-//			for (int j = 0; j < result.rmse.length; j++) {
-//				outputWriter.write("," + result.rmse[j]);
-//			}
-//			for (int j = 0; j < result.re.length; j++) {
-//				outputWriter.write("," + result.re[j]);
-//			}
-//			outputWriter.newLine();
-//			outputWriter.flush();
-//		}		
-//		outputWriter.close();
-		markovModel.displayModel();
-//		markovModel.displayClusterSizesAtLastLayer();
-//		
-//		((PartialMarkovKMeansAveraged) markovModel).displayClusterStdDevsForLastLayer();
-//		((PartialMarkovKMeansAveraged) markovModel).displayClusterCentroidsForLastLayer();
-	}
-	
-	public static void main(String[] args) throws Exception {
-		int[] clusters = {2};
-		int[] clusteringAttributes = new int[]{0};
-		for (int nc : clusters) {
-			main1(nc, PartialMarkovKMeansMax.class, clusteringAttributes);
-//			main2(nc);
-		}
-	}
-	
-	public static void main2(int numClusters) throws Exception {
-		int seed = 10;
-		Class<DiffMarkovKMeansAveraged> clazz = DiffMarkovKMeansAveraged.class;
-//		String modelFile = "20141104_n" + numClusters + "_" + clazz.getSimpleName();
-//		modelFile += ".model";
-		System.out.println("Building the model ... ");
-		String[] trainLocations = GlobalParameters.SAFileParameters.trainLocations;
-		String[] testLocations = GlobalParameters.SAFileParameters.testLocations;
-		String[] testLocationsAbs = GlobalParameters.FileParameters.testLocations;
-		
-		Constructor<DiffMarkovKMeansAveraged> constructor = clazz.getConstructor(String[].class, String[].class, int.class, int.class);
-		DiffMarkovKMeansAveraged markovModel = constructor.newInstance(trainLocations, null, numClusters, seed);
-		
-		markovModel.doClusteringAtEachTimeSteps(numClusters);
-		markovModel.build();
-		
-		String outputFile = "popcorn_results_n" + numClusters + "_" + clazz.getSimpleName();
-		outputFile += ".txt";
-		System.out.println(outputFile);
-		BufferedWriter outputWriter = new BufferedWriter(new FileWriter(outputFile));
 		for (int i = 0; i < testLocations.length - 1; i++) {
+		    String outputFile = "popcorn_results_n" + numClusters + "_" + clazz.getSimpleName();
+	        outputFile += "_" + i + ".txt";
+	        System.out.println(outputFile);
+	        BufferedWriter outputWriter = new BufferedWriter(new FileWriter(outputFile));
 			System.out.println("At t = " + i);
-			Result result = markovModel.getTestMSE(testLocations[i], testLocationsAbs[i], testLocationsAbs[testLocations.length - 1], i);
-			outputWriter.write("At t = " + Math.pow(2, i+1));
-			for (int j = 0; j < result.rmse.length; j++) {
-				outputWriter.write("," + result.rmse[j]);
-			}
-			for (int j = 0; j < result.rmse.length; j++) {
-				outputWriter.write("," + result.re[j]);
-			}
-			outputWriter.newLine();
-			outputWriter.flush();
+			Result result = markovModel.getTestMSE(testLocations[i], testLocationsAbs[testLocations.length - 1], i, outputWriter);
+		    outputWriter.close();
+		    System.out.println("t = " + i + ", " + Arrays.toString(result.re) + " :: " + Arrays.toString(result.rmse));
 		}		
-		outputWriter.close();
-//		markovModel.displayModel();
-//		markovModel.displayClusterSizesAtLastLayer();
-//		
-//		((PartialMarkovKMeansAveraged) markovModel).displayClusterStdDevsForLastLayer();
-//		((PartialMarkovKMeansAveraged) markovModel).displayClusterCentroidsForLastLayer();
 	}
 	
 }
